@@ -1,0 +1,25 @@
+{
+  // Используйте IntelliSense, чтобы узнать о возможных атрибутах.
+  // Наведите указатель мыши, чтобы просмотреть описания существующих атрибутов.
+  // Для получения дополнительной информации посетите: https://go.microsoft.com/fwlink/?linkid=830387
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "CDP",
+      "cwd": "${workspaceFolder}",
+      "args": ["-e", "require('@puppedo/core').run()"],
+      "env": {
+        "PPD_ROOT": "tests",
+        "PPD_ROOT_ADDITIONAL": ["${workspaceFolder}\\node_modules\\@puppedo\\atoms, ${workspaceFolder}\\dist"],
+        "PPD_TESTS": "cdp",
+        "PPD_DATA": "{ \"myEnv\": \"mainEnv\" }",
+        "PPD_DEBUG_MODE": "true",
+        "PPD_LOG_LEVEL_NESTED": 1,
+        "PPD_LOG_IGNORE_HIDE_LOG": "true"
+      },
+      "resolveSourceMapLocations": ["${workspaceFolder}/**", "!**/node_modules/**"]
+    },
+  ]
+}

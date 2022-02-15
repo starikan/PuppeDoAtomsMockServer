@@ -1,0 +1,4 @@
+name: mockServerStart
+type: atom
+description: Start Mock Server
+allowOptions: ['port']

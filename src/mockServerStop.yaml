@@ -1,0 +1,4 @@
+name: mockServerStop
+type: atom
+description: Stopr Mock Server
+allowOptions: ['port']
