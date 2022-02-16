@@ -1,4 +1,4 @@
 name: mockServerStop
 type: atom
-description: Stopr Mock Server
+description: Stop Mock Server
 allowOptions: ['port']

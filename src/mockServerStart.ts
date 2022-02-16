@@ -36,32 +36,31 @@ module.exports = async function atomRun(): Promise<void> {
           resolve(response.end());
         });
       } else {
+        response.writeHead(500, { 'Content-Type': 'application/json' });
         for (const route of Object.keys(serverData.routes)) {
           const { type, responseKey } = serverData.routes[route];
           if (request.method === type && request.url === route) {
-            const data = serverData.response[responseKey];
-            response.writeHead(200, { 'Content-Type': 'application/json' });
-            response.write(JSON.stringify(data));
-            response.end();
-            resolve();
+            try {
+              const data = serverData.response[responseKey];
+              response.writeHead(200, { 'Content-Type': 'application/json' });
+              response.write(JSON.stringify(data));
+              break;
+            } catch (error) {
+              console.log(error);
+            }
           }
         }
-        reject(new Error('No route found.'));
+        resolve(response.end());
       }
     });
   }
 
   const server = http.createServer(requestHandler);
-
-  const runServer = (): void => {
-    server.listen(port, (error) => {
-      if (error) {
-        this.log({ text: `Something bad happened with server on port: ${port}. ${error}`, level: 'error' });
-      }
-    });
-  };
-
-  runServer();
+  server.listen(port, (error) => {
+    if (error) {
+      this.log({ text: `Something bad happened with server on port: ${port}. ${error}`, level: 'error' });
+    }
+  });
 
   await this.log({ text: `Starting server port: ${port}`, level: 'info' });
 };
