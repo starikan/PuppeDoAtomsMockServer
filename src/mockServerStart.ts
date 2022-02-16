@@ -22,8 +22,8 @@ module.exports = async function atomRun(): Promise<void> {
         request.on('end', () => {
           try {
             const { data = {} } = JSON.parse(body);
-            const { routes = [], response: responseBody = [], appendRoutes = false } = data;
-            if (!appendRoutes) {
+            const { routes = [], response: responseBody = [], append = false } = data;
+            if (!append) {
               serverData.routes = routes;
               serverData.response = responseBody;
             } else {
