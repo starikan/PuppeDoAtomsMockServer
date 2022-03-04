@@ -5,7 +5,42 @@ module.exports = async function atomRun(): Promise<void> {
 
   const serverData = {
     routes: {},
-    response: {},
+    response: [],
+  };
+
+  const updateRules = (body: any): void => {
+    const { data = {} } = JSON.parse(body);
+    const { routes = [], response = {}, append = false } = data;
+    if (!append) {
+      serverData.routes = routes;
+      serverData.response = response.responses ?? [];
+    } else {
+      serverData.routes = { ...serverData.routes, ...routes };
+
+      const newResponseKeys = (response.responses ?? []).map((v) => v.responseKey);
+      serverData.response = serverData.response.filter((v) => !newResponseKeys.includes(v.responseKey));
+
+      serverData.response = [...serverData.response, ...(response.responses ?? [])];
+    }
+  };
+
+  const resolverMock = (req: any, res: any): any => {
+    for (const route of Object.keys(serverData.routes)) {
+      const { type, responseKey } = serverData.routes[route];
+      if (req.method === type && req.url === route) {
+        try {
+          const response = serverData.response.find((v) => v.responseKey === responseKey);
+          const { body, code } = response ?? {};
+          res.writeHead(code ?? 200, { 'Content-Type': 'application/json' });
+          res.write(JSON.stringify(body ?? {}));
+          break;
+        } catch (error) {
+          console.log(error);
+        }
+      }
+    }
+
+    return res;
   };
 
   async function requestHandler(request, response): Promise<void> {
@@ -21,15 +56,7 @@ module.exports = async function atomRun(): Promise<void> {
         });
         request.on('end', () => {
           try {
-            const { data = {} } = JSON.parse(body);
-            const { routes = [], response: responseBody = [], append = false } = data;
-            if (!append) {
-              serverData.routes = routes;
-              serverData.response = responseBody;
-            } else {
-              serverData.routes = { ...serverData.routes, ...routes };
-              serverData.response = { ...serverData.response, ...responseBody };
-            }
+            updateRules(body);
           } catch (error) {
             reject(error);
           }
@@ -37,25 +64,14 @@ module.exports = async function atomRun(): Promise<void> {
         });
       } else {
         response.writeHead(500, { 'Content-Type': 'application/json' });
-        for (const route of Object.keys(serverData.routes)) {
-          const { type, responseKey } = serverData.routes[route];
-          if (request.method === type && request.url === route) {
-            try {
-              const data = serverData.response[responseKey];
-              response.writeHead(200, { 'Content-Type': 'application/json' });
-              response.write(JSON.stringify(data));
-              break;
-            } catch (error) {
-              console.log(error);
-            }
-          }
-        }
-        resolve(response.end());
+        const resolvedResponse = resolverMock(request, response);
+        resolve(resolvedResponse.end());
       }
     });
   }
 
   const server = http.createServer(requestHandler);
+
   server.listen(port, (error) => {
     if (error) {
       this.log({ text: `Something bad happened with server on port: ${port}. ${error}`, level: 'error' });
