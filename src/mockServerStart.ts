@@ -8,6 +8,8 @@ module.exports = async function atomRun(): Promise<void> {
     response: [],
   };
 
+  const { log } = this;
+
   const updateRules = (body: any): void => {
     const { data = {} } = JSON.parse(body);
     const { routes = [], response = {}, append = false } = data;
@@ -31,6 +33,10 @@ module.exports = async function atomRun(): Promise<void> {
         try {
           const response = serverData.response.find((v) => v.responseKey === responseKey);
           const { body, code } = response ?? {};
+          log({
+            text: `Request Url: ${req.url}, Method: ${req.method}, Code: ${code}, Body: ${JSON.stringify(body)}`,
+            level: 'info',
+          });
           res.writeHead(code ?? 200, { 'Content-Type': 'application/json' });
           res.write(JSON.stringify(body ?? {}));
           break;
@@ -48,11 +54,13 @@ module.exports = async function atomRun(): Promise<void> {
       if (request.method === 'DELETE' && request.url === '/ppd-mock-server-stop') {
         // eslint-disable-next-line no-use-before-define
         server.close();
+        log({ text: 'Server Stoped.', level: 'info' });
         resolve(response.end());
       } else if (request.method === 'POST' && request.url === '/ppd-mock-server-routes') {
         let body = '';
         request.on('data', (data) => {
           body += data;
+          log({ text: `Routes Data: ${data}`, level: 'info' });
         });
         request.on('end', () => {
           try {

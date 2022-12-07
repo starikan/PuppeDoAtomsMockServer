@@ -1,6 +1,6 @@
 {
   "name": "@puppedo/atoms-mock-server",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "Atoms for Mock Server with PuppeDo",
   "main": "index.js",
   "repository": {
