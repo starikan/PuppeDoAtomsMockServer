@@ -71,7 +71,7 @@ module.exports = async function atomRun(): Promise<void> {
           resolve(response.end());
         });
       } else {
-        response.writeHead(500, { 'Content-Type': 'application/json' });
+        response.statusCode = 500;
         const resolvedResponse = resolverMock(request, response);
         resolve(resolvedResponse.end());
       }
